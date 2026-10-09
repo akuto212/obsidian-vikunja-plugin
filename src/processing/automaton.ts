@@ -8,6 +8,7 @@ import UpdateTasks from "./updateTasks";
 import CreateTasks from "./createTasks";
 import {Processor} from "./processor";
 import {SyncLabels} from "./syncLabels";
+import {apiErrorMessage} from "../vikunja/errors";
 
 interface StepsOutput {
 	localTasks: PluginTask[];
@@ -70,7 +71,7 @@ class Automaton {
 				output = await this.execStep(localTasks, vikunjaTasks);
 			} catch (e) {
 				this.status = AutomatonStatus.ERROR;
-				console.error("Automaton: Error in step " + this.currentStep + ", Error: " + e);
+				console.error("Automaton: Error in step " + this.currentStep, apiErrorMessage(e), e);
 				return;
 			}
 			localTasks = output.localTasks;

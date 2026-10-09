@@ -4,6 +4,7 @@ import {backendToFindTasks, chooseOutputFile, supportedTasksPluginsFormat} from 
 import {ModelsProject, ModelsProjectView} from "../../vikunja_sdk";
 import {appHasDailyNotesPluginLoaded} from "obsidian-daily-notes-interface";
 import {PluginTask} from "../vaultSearcher/vaultSearcher";
+import {apiErrorMessage} from "../vikunja/errors";
 
 export interface VikunjaPluginSettings {
 	mySetting: string;
@@ -74,6 +75,7 @@ export const DEFAULT_SETTINGS: VikunjaPluginSettings = {
 export class MainSetting extends PluginSettingTab {
 	plugin: VikunjaPlugin;
 	projects: ModelsProject[] = [];
+	private projectsLoaded = false;
 	private cacheListener: number;
 	private cronListener: number;
 
@@ -296,15 +298,11 @@ export class MainSetting extends PluginSettingTab {
 				.onClick(async () => {
 					button.setDisabled(true);
 					try {
-						const tasks = await this.plugin.tasksApi.getAllTasks();
-						if (this.plugin.settings.debugging) {
-							console.log(`SettingsTab: Got tasks:`, tasks);
-						}
+						await this.testConnection();
 						new Notice("Connection OK! ✅");
-						await this.loadApi();
 					} catch (e) {
-						console.error(e);
-						new Notice("Connection Error! ❌");
+						console.error("SettingsTab: Connection check failed", apiErrorMessage(e), e);
+						new Notice(`Connection Error! ❌ ${apiErrorMessage(e)}`);
 					}
 					// Reset text
 					setInterval(() => {
@@ -596,10 +594,15 @@ export class MainSetting extends PluginSettingTab {
 
 		if (this.projects.length === 0) {
 			new Setting(containerEl)
-				.setName("Loading projects...")
-				.setDesc("Please wait until the projects are loaded. If this message still there after a few seconds, please check your Vikunja Host and Access Token. Enable debugging and check the console for more information.");
-			this.loadApi().then(_r => {
-			});
+				.setName(this.projectsLoaded ? "No projects found" : "Loading projects...")
+				.setDesc(this.projectsLoaded
+					? "Create a project in Vikunja, then click Test connection to reload the project list."
+					: "Please wait until the projects are loaded. If this message still there after a few seconds, please check your Vikunja Host and Access Token. Enable debugging and check the console for more information.");
+			if (!this.projectsLoaded) {
+				this.loadApi().catch(e => {
+					console.error("SettingsTab: Could not get projects", apiErrorMessage(e), e);
+				});
+			}
 			return;
 		}
 
@@ -643,14 +646,22 @@ export class MainSetting extends PluginSettingTab {
 
 	}
 
+	async testConnection() {
+		const tasks = await this.plugin.tasksApi.getAllTasks();
+		if (this.plugin.settings.debugging) console.log(`SettingsTab: Got tasks:`, tasks);
+		await this.plugin.labelsApi.loadLabels(true);
+		await this.loadApi();
+	}
+
 	async loadApi() {
 		this.projects = await this.plugin.projectsApi.getAllProjects();
+		this.projectsLoaded = true;
 
 		// Set default project if not set
 		if (this.projects.length > 0 && this.plugin.settings.defaultVikunjaProject === null && this.projects[0] !== undefined && this.projects[0].id !== undefined) {
 			this.plugin.settings.defaultVikunjaProject = this.projects[0].id;
 		}
-		if (this.plugin.settings.debugging) console.log(`SettingsTab: Default project set to:`, this.projects[0].id);
+		if (this.plugin.settings.debugging) console.log(`SettingsTab: Default project set to:`, this.plugin.settings.defaultVikunjaProject);
 
 		this.display();
 	}
@@ -679,6 +690,8 @@ export class MainSetting extends PluginSettingTab {
 	}
 
 	private resetApis() {
+		this.projects = [];
+		this.projectsLoaded = false;
 		// TODO: Implement an event to reload API configurations
 		this.plugin.tasksApi.init();
 		this.plugin.projectsApi.init();

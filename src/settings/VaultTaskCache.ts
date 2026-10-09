@@ -25,7 +25,7 @@ export default class VaultTaskCache {
 
 	public static fromJson(json: any, app: App, plugin: VikunjaPlugin): VaultTaskCache {
 		const taskCache = new VaultTaskCache(app, plugin);
-		console.log("VaultTaskCache: Loading cache from disk", json);
+		if (plugin.settings.debugging) console.log("VaultTaskCache: Loading cache from disk", Object.keys(json).length, "tasks");
 		const tempCache = Object.entries(json).map((taskJson: any) => {
 			const task = PluginTask.fromJson(taskJson[1]);
 			if (task === undefined) {
@@ -39,7 +39,7 @@ export default class VaultTaskCache {
 		}).filter((task: any) => task !== undefined);
 		// @ts-ignore
 		taskCache.cache = new Map<number, PluginTask>(tempCache);
-		console.log("VaultTaskCache: Loaded cache from disk", taskCache.cache);
+		if (plugin.settings.debugging) console.log("VaultTaskCache: Loaded cache from disk", taskCache.cache.size, "tasks");
 		return taskCache;
 	}
 

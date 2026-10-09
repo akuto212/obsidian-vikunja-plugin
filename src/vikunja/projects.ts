@@ -11,6 +11,7 @@ import {
 	ProjectsProjectViewsIdPostRequest
 } from "../../vikunja_sdk";
 import VikunjaAPI from "./VikunjaAPI";
+import {obsidianFetch} from "./transport";
 
 class Projects implements VikunjaAPI {
 	plugin: VikunjaPlugin;
@@ -28,6 +29,7 @@ class Projects implements VikunjaAPI {
 
 	init() {
 		const configuration = new Configuration({
+			fetchApi: obsidianFetch,
 			basePath: this.plugin.settings.vikunjaHost + "/api/v1",
 			apiKey: "Bearer " + this.plugin.settings.vikunjaAccessToken,
 		});

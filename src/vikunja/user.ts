@@ -2,6 +2,7 @@ import {App} from "obsidian";
 import VikunjaPlugin from "../../main";
 import {Configuration, UserApi, UserUser} from "../../vikunja_sdk";
 import VikunjaAPI from "./VikunjaAPI";
+import {obsidianFetch} from "./transport";
 
 class User implements VikunjaAPI {
 	plugin: VikunjaPlugin;
@@ -19,6 +20,7 @@ class User implements VikunjaAPI {
 
 	init() {
 		const configuration = new Configuration({
+			fetchApi: obsidianFetch,
 			basePath: this.plugin.settings.vikunjaHost + "/api/v1",
 			apiKey: "Bearer " + this.plugin.settings.vikunjaAccessToken,
 		});

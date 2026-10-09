@@ -304,6 +304,15 @@ class Processor {
 	}
 
 	private async createTaskAndUpdateToVault(task: PluginTask) {
+		if (!task.task.title?.trim()) {
+			if (this.plugin.settings.debugging) {
+				console.warn("Processor: Skipping task without a title", {
+					file: task.filepath,
+					line: task.lineno + 1,
+				});
+			}
+			return;
+		}
 		if (this.plugin.settings.debugging) console.log("Step CreateTask: Pushing task to vikunja", task);
 		task.task = await this.plugin.tasksApi.createTask(task);
 		if (this.plugin.settings.debugging) console.log("Step CreateTask: Update task in Vault ", task);

@@ -13,6 +13,7 @@ import {
 	TasksTaskLabelsPutRequest
 } from "../../vikunja_sdk";
 import VikunjaAPI from "./VikunjaAPI";
+import {obsidianFetch} from "./transport";
 import {PluginTask} from "../vaultSearcher/vaultSearcher";
 
 class Tasks implements VikunjaAPI {
@@ -31,6 +32,7 @@ class Tasks implements VikunjaAPI {
 
 	init() {
 		const configuration = new Configuration({
+			fetchApi: obsidianFetch,
 			basePath: this.plugin.settings.vikunjaHost + "/api/v1",
 			apiKey: "Bearer " + this.plugin.settings.vikunjaAccessToken,
 		});

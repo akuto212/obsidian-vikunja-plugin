@@ -10,6 +10,8 @@ import {
 	ModelsLabel,
 } from "../../vikunja_sdk";
 import VikunjaAPI from "./VikunjaAPI";
+import {obsidianFetch} from "./transport";
+import {apiErrorMessage} from "./errors";
 
 class Label implements VikunjaAPI {
 	plugin: VikunjaPlugin;
@@ -28,6 +30,7 @@ class Label implements VikunjaAPI {
 
 	init() {
 		const configuration = new Configuration({
+			fetchApi: obsidianFetch,
 			basePath: this.plugin.settings.vikunjaHost + "/api/v1",
 			apiKey: "Bearer " + this.plugin.settings.vikunjaAccessToken,
 		});
@@ -123,17 +126,18 @@ class Label implements VikunjaAPI {
 	}
 
 	//Use with caution!!! Only use it in a place, where no other operations are currently running
-	async loadLabels(): Promise<ModelsLabel[]> {
+	async loadLabels(throwOnError = false): Promise<ModelsLabel[]> {
 		this.labelsMap.clear();
 		let allLabels: ModelsLabel[] = [];
 		try {
 			allLabels = await this.labelsApi.labelsGet();
 		} catch (e) {
+			if (throwOnError) throw e;
 			// There is a bug in Vikunja API that returns null instead of an empty array
 			if (e instanceof TypeError) console.info("LabelsAPI: No labels there");
 			else if (e instanceof FetchError) {
 			} else {
-				console.error("LabelsAPI: Could not get labels", e);
+				console.error("LabelsAPI: Could not get labels", apiErrorMessage(e), e);
 			}
 		}
 		allLabels.forEach(label => {
