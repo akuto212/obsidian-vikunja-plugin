@@ -23,7 +23,7 @@ The experience with this plugin is a lot like the excellent plugins for todoist:
 - [Ultimate Todoist Sync for Obsidian Plugin](https://github.com/HeroBlackInk/ultimate-todoist-sync-for-obsidian)
 - [Obsidian Todoist Plugin](https://github.com/jamiebrynes7/obsidian-todoist-plugin)
 
-Supported Vikunja API: v0.24.1
+Supported Vikunja API: v2.7.0 (API v1)
 
 ## Features
 
@@ -67,7 +67,7 @@ instance.
 ## Contributing
 
 - Clone this repo.
-- Make sure your NodeJS is at least v16 (`node --version`).
+- Make sure your NodeJS is at least v18 (`node --version`).
 - `npm i` or `yarn` to install dependencies.
 - `npm run dev` to start compilation in watch mode.
 
@@ -76,11 +76,16 @@ instance.
 So you need a Java Runtime Environment (JRE). Install at least Java 11.
 Then you can use `npx openapi-generator-cli` to rebuild the sdk for vikunja api.
 
+The SDK is generated from the official Vikunja 2.7.0 release schema with the generator version pinned in `openapitools.json`.
+The enum template in `scripts/templates` adds a `keyof` assertion required by the project's strict TypeScript checks.
+
 ```bash
-npx openapi-generator-cli generate -i https://try.vikunja.io/api/v1/docs.json -o vikunja_sdk -g typescript-fetch --additional-properties "supportsES6=true,npmVersion=10.8.1,typescriptThreePlus=true"
-# or
 npm run gen-sdk
+# Or use a local copy of the release schema:
+npm run gen-sdk -- /path/to/swagger.json
 ```
+
+Run `npm test` for API compatibility checks and `npm run build` to build the plugin.
 
 ### Release
 

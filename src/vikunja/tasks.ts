@@ -5,7 +5,7 @@ import {
 	ModelsTask,
 	ProjectsIdTasksPutRequest,
 	TaskApi,
-	TasksAllGetRequest,
+	TasksGetRequest,
 	TasksIdDeleteRequest,
 	TasksIdGetRequest,
 	TasksIdPostRequest,
@@ -38,15 +38,15 @@ class Tasks implements VikunjaAPI {
 	}
 
 	async getAllTasks(): Promise<ModelsTask[]> {
-		const params: TasksAllGetRequest = {page: 0};
-		return await this.tasksApi.tasksAllGet(params);
+		const params: TasksGetRequest = {page: 0};
+		return await this.tasksApi.tasksGet(params);
 	}
 
 	async getTasksForPage(page: number): Promise<ModelsTask[]> {
-		const params: TasksAllGetRequest = {
+		const params: TasksGetRequest = {
 			page: page
 		};
-		return await this.tasksApi.tasksAllGet(params);
+		return await this.tasksApi.tasksGet(params);
 	}
 
 	async updateTask(task: PluginTask): Promise<ModelsTask> {
